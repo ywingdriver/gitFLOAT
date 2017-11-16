@@ -32,7 +32,7 @@ void Accel::init(){
     Serial.println("Couldnt start Accelerometer");
     while (1);
   } else {
-    lis.setRange(LIS3DH_RANGE_8_G);
+    lis.setRange(LIS3DH_RANGE_16_G);
     range = lis.getRange();
     Serial.println("Accelerometer init successful with " + String(2 << range) +" sensitivity.");
   }

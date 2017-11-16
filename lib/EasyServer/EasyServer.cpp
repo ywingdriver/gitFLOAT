@@ -1,21 +1,14 @@
-#include <Arduino.h>
 #include <OneWire.h>
-#include <ESP8266WiFi.h>
-#include <WiFiClient.h>
 #include <ESP8266WebServer.h>
 #include <Wire.h>
-#include <SPI.h>
-#include <SoftwareSerial.h>
 #include <stdlib.h>
 #include <time.h>
-#include <vector>
 #include <sstream>
-#include "Easy_Server.h"
-
+#include "EasyServer.h"
 
 // Constructor
-EasyServer::EasyServer(){
-    server = new ESP8266WebServer(SERVER_PORT);
+EasyServer::EasyServer(int server_port){
+    server = new ESP8266WebServer(server_port);
     linksCSS = "";
     css = "";
     linksScript = "";
@@ -78,6 +71,17 @@ void EasyServer::addVariable(String name, String value) {
   variables += ";";
 }
 
+void EasyServer::reset() {
+  linksCSS = "";
+  css = "";
+  linksScript = "";
+  scriptHead = "";
+  variables = "";
+  body = "";
+  scriptBody = "";
+  linksScriptAsync = "";
+}
+
 // float addBody()
 // ---------------------------------------------
 // Adds the HTML based body of the file inbetween the <body> tags.
@@ -105,10 +109,12 @@ void EasyServer::addBodyScript(String scriptString) {
 // beginServer()
 // Begins server process
 void EasyServer::beginServer() {
-  buildWebPage();
+  //buildWebPage();
   server->begin();
 }
 
+// handleClient()
+// Just a faster way to use the ESP8266WebServer.handleClient() function
 void EasyServer::handleClient() {
   server->handleClient();
 }
@@ -130,7 +136,7 @@ void EasyServer::buildWebPage() {
     html += body;
     html += "</body><script>";
     html += scriptBody;
-    html += "</script";
+    html += "</script>";
     html += linksScriptAsync;
     html += "</html>";
 
