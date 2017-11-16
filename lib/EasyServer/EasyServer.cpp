@@ -4,6 +4,12 @@
 #include <stdlib.h>
 #include <time.h>
 #include <sstream>
+#include <Arduino.h>
+#include <OneWire.h>
+#include <ESP8266WiFi.h>
+#include <WiFiClient.h>
+#include <stdlib.h>
+#include <sstream>
 #include "EasyServer.h"
 
 // Constructor
@@ -17,7 +23,10 @@ EasyServer::EasyServer(int server_port){
     body = "";
     scriptBody = "";
     linksScriptAsync = "";
-    server->on("/", std::bind(&EasyServer::buildWebPage, this));
+    //server->on("/", std::bind(&EasyServer::buildWebPage, this));
+    server->on("/", [&]() {
+      server->send(200, "text/plain", "Yep");
+    });
   }
 
 // Destructor
@@ -117,12 +126,13 @@ void EasyServer::beginServer() {
 // Just a faster way to use the ESP8266WebServer.handleClient() function
 void EasyServer::handleClient() {
   server->handleClient();
+  Serial.println("FUCK");
 }
 
 // PRIVATE buildWebpage()
 // Takes all of the different compoents of the webpage and builds a thing
 void EasyServer::buildWebPage() {
-
+    Serial.println("LJLJKJKL");
     String html = "<!DOCTYPE html><html><head><title></title><meta charset= 'utf-8' /><meta name= 'viewport' content= 'width=device-width' />";
     html += linksCSS;
     html += "<style>";
@@ -139,6 +149,7 @@ void EasyServer::buildWebPage() {
     html += "</script>";
     html += linksScriptAsync;
     html += "</html>";
+    Serial.println(html);
 
     server->send(200, "text/html", html);
 }
