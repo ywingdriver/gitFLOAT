@@ -41,6 +41,7 @@ void buildWebPage();
 void setup() {
   Serial.begin(9600);
   Serial.println("Start setup");
+  
   WiFi.mode(WIFI_STA); // SETS TO STATION MODE!
   WiFi.begin(ssid, password);
   Serial.println("");
@@ -77,17 +78,22 @@ void setup() {
 
 void loop() {
   Serial.println("Made it here!");
-  accelD = myAccel.getAccelData();
+
   Serial.println("ACCEL");
+  accelD = myAccel.getAccelData();
+
+  Serial.println("TEMP");
   tempD = myTemp.getTempData();
   //tempD = 30.3;
-  Serial.println("TEMP");
+
+  Serial.println("GPS Lat");
   gpsLat = myGPS.getGPSLat();
-  Serial.println("GPS");
+
+  Serial.println("GPS Lon");
   gpsLon = myGPS.getGPSLon();
-  Serial.println("LONGGPS");
+
+  Serial.println("GPS Speed");
   gpsSpeed = myGPS.getGPSSpeed();
-  Serial.println("SPEEEEEED");
 
   Serial.print("Accel: "); Serial.println(accelD);
   Serial.print("Temp: "); Serial.println(tempD);
@@ -126,6 +132,7 @@ void loop() {
     buildWebPage();
     Serial.println("Made it here!3");
   }
+
   Serial.println("OISDF");
   ++loopTracker;
   Serial.println("OFDSISDF");
