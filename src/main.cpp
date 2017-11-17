@@ -1,6 +1,7 @@
 #include <Accel.h>
 #include <Temp.h>
 #include <GPS.h>
+#include <Memory.h>
 #include <LiquidCrystal_I2C.h>
 #include <Util.h>
 #include <vector>
@@ -12,6 +13,7 @@
 #define CHECK_FREQUENCY 10
 
 void buildWebPage();
+
 void tcpCleanup()
 {
   while(tcp_tw_pcbs!=NULL)
@@ -23,6 +25,7 @@ void tcpCleanup()
 Accel myAccel;
 GPS myGPS;
 Temp myTemp;
+//Memory myMemory;
 ESP8266WebServer server(80);
 LiquidCrystal_I2C lcd(0x3f,16,2);
 
@@ -37,6 +40,11 @@ std::vector< float > lonV;
 std::vector< float > tempV;
 std::vector< int > timeV;
 int loopTracker = 0;
+// const int readingSize = 5;
+// const int readingTotal = 600;
+// int count = 0;
+// float data[readingTotal][readingSize];
+
 
 const char* ssid = "William iPhone";
 const char* password = "thorincook";
@@ -62,6 +70,7 @@ void setup() {
 
   myGPS.init();
   myTemp.init();
+  //myMemory.init();
   myAccel.init();
   tempD = myTemp.getTempData();
 
@@ -87,6 +96,12 @@ void loop() {
   gpsLon = myGPS.getGPSLon();
   // Serial.println("EF");
   gpsSpeed = myGPS.getGPSSpeed();
+
+  // float temp[] = {accelD, 5.0, gpsLat, gpsLon, gpsSpeed};
+  //
+  // for(int i = 0; i < readingSize; i++){
+  //   data[count][i] = temp[i];
+  // }
 
   //
   tcpCleanup();
@@ -114,6 +129,10 @@ void loop() {
       timeV.erase(timeV.begin() + 1);
     }
 
+    // for(int j = 0; j < readingTotal; j++){
+    //   myMemory.append(data[j][0], data[j][1], data[j][2], data[j][3], data[j][4]);
+    // }
+
     lcd.setCursor(0,0);
     lcd.print("T:");
     lcd.setCursor(2,0);
@@ -132,7 +151,9 @@ void loop() {
     lcd.setCursor(9,1);
     lcd.print(gpsLon);
   }
+
   loopTracker++;
+  //count++;
   server.handleClient();
   myGPS.smartDelay(100);
   //delay(100);
