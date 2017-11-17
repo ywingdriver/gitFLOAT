@@ -13,14 +13,11 @@ float accelData;
 
 float Accel::getAccelData(){
   lis.read();
-
   sensors_event_t event;
   lis.getEvent(&event);
-
   float x = event.acceleration.x;
   float y = event.acceleration.y;
   float z = event.acceleration.z;
-
   accelData = sqrt(pow(x,2) + pow(y,2) + pow(z,2));
 
   return accelData;
