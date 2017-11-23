@@ -8,9 +8,9 @@
 class GPS
 {
   public:
-		float getGPSLat();
-		float getGPSLon();
-		float getGPSSpeed();
+		float getLat();
+		float getLon();
+		float getSpeed();
 		void smartDelay(unsigned long ms);
 		void init();
 };

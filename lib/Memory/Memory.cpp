@@ -35,9 +35,10 @@ void Memory::read(){
     Serial.println("File open for READING failure");
   } else {
     while(f.position() < f.size()){
-          s = f.readStringUntil('\n');
-          s.trim();
-          Serial.println(s);
+      s = f.readStringUntil('\n');
+      s.trim();
+      Serial.println(s);
+      delay(500);
     }
   }
   f.close();
@@ -58,5 +59,5 @@ void Memory::init(){
   SPIFFS.begin();
 
   Serial.println("SPIFFS init successful.");
-  clear();
+  //clear();
 }

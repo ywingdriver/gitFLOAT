@@ -10,7 +10,7 @@
 #include <WiFiClient.h>
 #include <ESP8266WebServer.h>
 
-#define CHECK_FREQUENCY 10
+#define CHECK_FREQUENCY 120
 
 void buildWebPage();
 
@@ -25,9 +25,9 @@ void tcpCleanup()
 Accel myAccel;
 GPS myGPS;
 Temp myTemp;
-//Memory myMemory;
+Memory myMemory;
 ESP8266WebServer server(80);
-LiquidCrystal_I2C lcd(0x3f,16,2);
+//LiquidCrystal_I2C lcd(0x3f,16,2);
 
 float gpsLat;
 float gpsLon;
@@ -40,72 +40,80 @@ std::vector< float > lonV;
 std::vector< float > tempV;
 std::vector< int > timeV;
 int loopTracker = 0;
-// const int readingSize = 5;
-// const int readingTotal = 600;
-// int count = 0;
-// float data[readingTotal][readingSize];
+const int readingSize = 5;
+const int readingTotal = 120;
+int count = 0;
+float data[readingTotal][readingSize];
 
 
-const char* ssid = "William iPhone";
-const char* password = "thorincook";
+const char* ssid = "Go Griz";
+const char* password = "Kenpachi";
 // const char* ssid = "LBP_ASUS";
 // const char* password = "Trepid@3772";
 
 void setup() {
   Serial.begin(9600);
-  Serial.println("Start setup");
+
   WiFi.mode(WIFI_STA); // SETS TO STATION MODE!
   WiFi.begin(ssid, password);
-  Serial.println("");
 
   while (WiFi.status() != WL_CONNECTED) {
     delay(500);
     Serial.print(".");
   }
-  Serial.println("");
+
+  Serial.println();
   Serial.print("Connected to ");
   Serial.println(ssid);
   Serial.print("IP address: ");
   Serial.println(WiFi.localIP());
 
+  delay(5000);
+
+  Serial.println("Initializing sensors....");
+
   myGPS.init();
   myTemp.init();
-  //myMemory.init();
+  myMemory.init();
   myAccel.init();
+
   tempD = myTemp.getTempData();
 
-  lcd.begin(16,2);
-  lcd.backlight();
-  lcd.setCursor(0,0);
-  lcd.print("INIT");
+  //myMemory.clear();
+  myMemory.close();
+  delay(1000);
+  myMemory.read();
 
   server.on("/", buildWebPage);
   server.begin();
 
   Serial.println();
-  Serial.println("Start data read....");
-  Serial.println();
+  Serial.println("Begin sensor reading....");
 }
 
 void loop() {
   accelD = myAccel.getAccelData();
   //tempD = myTemp.getTempData();
-  // Serial.println("EF");
-  gpsLat = myGPS.getGPSLat();
-  // Serial.println("EF");
-  gpsLon = myGPS.getGPSLon();
-  // Serial.println("EF");
-  gpsSpeed = myGPS.getGPSSpeed();
+  gpsLat = myGPS.getLat();
+  gpsLon = myGPS.getLon();
+  gpsSpeed = myGPS.getSpeed();
 
-  // float temp[] = {accelD, 5.0, gpsLat, gpsLon, gpsSpeed};
-  //
-  // for(int i = 0; i < readingSize; i++){
-  //   data[count][i] = temp[i];
-  // }
+  Serial.print("Accel: "); Serial.println(accelD);
+  Serial.print("Temp: "); Serial.println(tempD);
+  Serial.print("Lat: "); Serial.println(gpsLat);
+  Serial.print("Lon: "); Serial.println(gpsLon);
+  Serial.print("Speed: "); Serial.println(gpsSpeed);
+  Serial.println();
 
-  //
+  float temp[] = {accelD, tempD, gpsLat, gpsLon, gpsSpeed};
+
+  for(int i = 0; i < readingSize; i++){
+    data[count][i] = temp[i];
+  }
+
   tcpCleanup();
-  if (loopTracker > CHECK_FREQUENCY){
+
+  if (count >= (readingTotal-1)){
     //tempD = myTemp.getTempData();
     accelV.push_back(accelD);
     tempV.push_back(tempD);
@@ -114,12 +122,13 @@ void loop() {
     timeV.push_back(millis()/1000);
     loopTracker = 0;
 
-    Serial.print("Accel: "); Serial.println(accelD);
-    Serial.print("Temp: "); Serial.println(tempD);
-    Serial.print("Lat: "); Serial.println(gpsLat);
-    Serial.print("Lon: "); Serial.println(gpsLon);
-    Serial.print("Speed: "); Serial.println(gpsSpeed);
-    Serial.println();
+    Serial.println("------------------- To File -------------------");
+    for(int j = 0; j < (readingTotal-1); j++){
+      myMemory.append(data[j][0], data[j][1], data[j][2], data[j][3], data[j][4]);
+    }
+    myMemory.close();
+
+    count = 0;
 
     if (static_cast<int>(timeV.size()) > 400) {
       accelV.erase(accelV.begin() + 1);
@@ -128,35 +137,12 @@ void loop() {
       lonV.erase(lonV.begin() + 1);
       timeV.erase(timeV.begin() + 1);
     }
-
-    // for(int j = 0; j < readingTotal; j++){
-    //   myMemory.append(data[j][0], data[j][1], data[j][2], data[j][3], data[j][4]);
-    // }
-
-    lcd.setCursor(0,0);
-    lcd.print("T:");
-    lcd.setCursor(2,0);
-    lcd.print(tempD);
-
-    lcd.setCursor(8,0);
-    lcd.print("Acc:");
-    lcd.setCursor(12,0);
-    lcd.print(accelD);
-
-    lcd.setCursor(0,1);
-    lcd.print("GPS");
-    lcd.setCursor(3,1);
-    lcd.print(gpsLat);
-
-    lcd.setCursor(9,1);
-    lcd.print(gpsLon);
   }
 
   loopTracker++;
-  //count++;
+  count++;
   server.handleClient();
-  myGPS.smartDelay(100);
-  //delay(100);
+  myGPS.smartDelay(500);
 }
 
 void buildWebPage() {
@@ -195,3 +181,25 @@ void buildWebPage() {
     html += "<script>function initMap(){var t={lat:titanicLat,lng:titanicLong},e=new google.maps.Map(document.getElementById('divBR'),{zoom:9,center:t});new google.maps.Marker({position:t,map:e})}for(API_KEY='AIzaSyCk-Qr3LlPgeWbOsceNpKBq6DE1pdA_AhU',width=window.innerWidth/2,height=window.innerHeight/2,margin=80,svgArray=[],gArray=[],svgName=['Temerature (Celsius)','Accelerometer'],svgColors=['red','blue','yellow','green'],svgArray.push(d3.select('#divTL').append('svg')),svgArray.push(d3.select('#divTR').append('svg')),i=0;2>i;i++)gArray.push(svgArray[i].append('g').attr('transform','translate('+margin/2+','+margin/2+')'));var xTime=d3.scaleTime().rangeRound([0,width-margin]).domain(d3.extent(timeArray,function(t){return console.log(+new Date-(timeArray[timeArray.length-1]-t)),new Date(1e3*(+new Date-(timeArray[timeArray.length-1]-t)))})),yTemp=d3.scaleLinear().rangeRound([height-margin,0]).domain(d3.extent(tempData,function(t){return t})),yAccl=d3.scaleLinear().rangeRound([height-margin,0]).domain(d3.extent(accelData[0].concat(accelData[1]).concat(accelData[2]),function(t){return t}));lineTemp=d3.line().x(function(t,e){return xTime(new Date(1e3*(+new Date-(timeArray[timeArray.length-1]-timeArray[e]))))}).y(function(t){return yTemp(t)}),lineAccel=d3.line().x(function(t,e){return xTime(new Date(1e3*(+new Date-(timeArray[timeArray.length-1]-timeArray[e]))))}).y(function(t){return yAccl(t)});for(var i=0;2>i;++i)gArray[i].append('g').attr('transform','translate(0,'+(height-margin)+')').call(d3.axisBottom(xTime)).select('.domain').remove();gArray[0].append('g').call(d3.axisLeft(yTemp)).append('text').attr('fill',svgColors[3]).attr('transform','rotate(-90)').attr('y',6).attr('dy','0.71em').attr('text-anchor','end').attr('font-size',15).text(svgName[0]),gArray[0].append('path').datum(tempData).attr('fill','none').attr('stroke',svgColors[3]).attr('stroke-linejoin','round').attr('stroke-linecap','round').attr('stroke-width',2.5).attr('d',lineTemp),gArray[1].append('g').call(d3.axisLeft(yAccl)).append('text').attr('fill',svgColors[1]).attr('transform','rotate(-90)').attr('y',6).attr('dy','0.71em').attr('text-anchor','end').attr('font-size',15).text(svgName[1]);for(var i=0;3>i;++i)gArray[1].append('path').datum(accelData[i]).attr('fill','none').attr('stroke',svgColors[i]).attr('stroke-linejoin','round').attr('stroke-linecap','round').attr('stroke-width',2.5).attr('d',lineAccel);document.getElementById('tempText').innerHTML=''+tempData[tempData.length-1]+'&nbsp;<small>&deg;C</small>',htmlList='<h3>Last 10 GPS readings</h3><ul>',GPSData[0].reverse(),GPSData[1].reverse();for(var i=0;10>i;++i)htmlList+='<li>Lat: '+GPSData[0][i]+' Long: '+GPSData[1][i]+'</li>';document.getElementById('divBL').innerHTML=htmlList;</script> <script async defer src='https://maps.googleapis.com/maps/api/js?key=AIzaSyCk-Qr3LlPgeWbOsceNpKBq6DE1pdA_AhU&callback=initMap'></script> </html>";
     server.send(200, "text/html", html);
 }
+
+// lcd.setCursor(0,0);
+// lcd.print("T:");
+// lcd.setCursor(2,0);
+// lcd.print(tempD);
+//
+// lcd.setCursor(8,0);
+// lcd.print("Acc:");
+// lcd.setCursor(12,0);
+// lcd.print(accelD);
+//
+// lcd.setCursor(0,1);
+// lcd.print("GPS");
+// lcd.setCursor(3,1);
+// lcd.print(gpsLat);
+//
+// lcd.setCursor(9,1);
+// lcd.print(gpsLon);
+// lcd.begin(16,2);
+// lcd.backlight();
+// lcd.setCursor(0,0);
+// lcd.print("INIT");

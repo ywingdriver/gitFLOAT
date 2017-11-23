@@ -12,7 +12,6 @@ float tempData;
 float Temp::getTempData(){
   temp.requestTemperatures();
   tempData = temp.getTempCByIndex(0);
-  temp.begin();
   return tempData;
 }
 

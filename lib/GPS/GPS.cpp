@@ -11,19 +11,19 @@ static const int GPSBaud = 9600;
 TinyGPSPlus gps;
 SoftwareSerial ss(RXPin, TXPin);
 
-float GPS::getGPSLat(){
+float GPS::getLat(){
 	lat = gps.location.lat();
 	smartDelay(0);
 	return lat;
 }
 
-float GPS::getGPSLon(){
+float GPS::getLon(){
 	lon = gps.location.lng();
 	smartDelay(0);
 	return lon;
 }
 
-float GPS::getGPSSpeed(){
+float GPS::getSpeed(){
 	speed = gps.speed.kmph();
 	smartDelay(0);
 	return speed;
