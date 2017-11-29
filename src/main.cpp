@@ -54,19 +54,19 @@ const char* password = "Kenpachi";
 void setup() {
   Serial.begin(9600);
 
-  WiFi.mode(WIFI_STA); // SETS TO STATION MODE!
-  WiFi.begin(ssid, password);
-
-  while (WiFi.status() != WL_CONNECTED) {
-    delay(500);
-    Serial.print(".");
-  }
+  // WiFi.mode(WIFI_STA); // SETS TO STATION MODE!
+  // WiFi.begin(ssid, password);
+  //
+  // while (WiFi.status() != WL_CONNECTED) {
+  //   delay(500);
+  //   Serial.print(".");
+  // }
 
   Serial.println();
   Serial.print("Connected to ");
   Serial.println(ssid);
-  Serial.print("IP address: ");
-  Serial.println(WiFi.localIP());
+  // Serial.print("IP address: ");
+  // Serial.println(WiFi.localIP());
 
   delay(5000);
 
@@ -79,19 +79,26 @@ void setup() {
 
   tempD = myTemp.getTempData();
 
-  //myMemory.clear();
+  //****************************************
+  // Hey Will this is the thing I was metnioning in class, as long as you leave
+  // myMemory.clear() commented, the data should remain on the 8266. You will need to
+  // comment out the myMemory.close() and myMemory.read() or else it'll
+  // print out the entire file to Serial.
+  // myMemory.clear();
+  //****************************************
   myMemory.close();
   delay(1000);
   myMemory.read();
 
-  server.on("/", buildWebPage);
-  server.begin();
+  // server.on("/", buildWebPage);
+  // server.begin();
 
   Serial.println();
   Serial.println("Begin sensor reading....");
 }
 
 void loop() {
+  // Check if wifi is connected
   accelD = myAccel.getAccelData();
   //tempD = myTemp.getTempData();
   gpsLat = myGPS.getLat();
@@ -111,7 +118,7 @@ void loop() {
     data[count][i] = temp[i];
   }
 
-  tcpCleanup();
+  // tcpCleanup();
 
   if (count >= (readingTotal-1)){
     //tempD = myTemp.getTempData();
@@ -141,7 +148,7 @@ void loop() {
 
   loopTracker++;
   count++;
-  server.handleClient();
+  // server.handleClient();
   myGPS.smartDelay(500);
 }
 
