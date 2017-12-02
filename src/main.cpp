@@ -33,7 +33,7 @@ GPS myGPS;
 Temp myTemp;
 Memory myMemory;
 EasyServer easyServer(80);
-//LiquidCrystal_I2C lcd(0x3f,16,2);
+LiquidCrystal_I2C lcd(0x3f,16,2);
 
 float gpsLat;
 float gpsLon;
@@ -47,7 +47,7 @@ std::vector< float > tempV;
 std::vector< int > timeV;
 int loopTracker = 0;
 const int readingSize = 5;
-const int readingTotal = 120;
+const int readingTotal = 20;
 int count = 0;
 float data[readingTotal][readingSize];
 
@@ -69,10 +69,10 @@ void setup() {
 
   Serial.println("Initializing sensors....");
 
-  // myGPS.init();
-  // myTemp.init();
+  myGPS.init();
+  myTemp.init();
   myMemory.init();
-  // myAccel.init();
+  myAccel.init();
 
   //tempD = myTemp.getTempData();
 
@@ -81,11 +81,14 @@ void setup() {
   // myMemory.clear() commented, the data should remain on the 8266. You will need to
   // comment out the myMemory.close() and myMemory.read() or else it'll
   // print out the entire file to Serial.
-  // myMemory.clear();
+  myMemory.clear();
   //****************************************
   // delay(1000);
-   myMemory.read();
-   myMemory.close();
+
+  lcd.backlight();
+
+  //myMemory.read();
+  myMemory.close();
 
   Serial.println();
   Serial.println("Begin sensor reading....");
@@ -95,19 +98,40 @@ void setup() {
 void loop() {
   if (WiFi.status() != WL_CONNECTED) {
     Serial.print(".");
-    //sensorStateLoop();
+    sensorStateLoop();
+    shown_connection = 0;
   }
   else {
     wifiStateLoop();
   }
 }
 
-void sensorStateloop() {
+void sensorStateLoop() {
   accelD = myAccel.getAccelData();
   tempD = myTemp.getTempData();
   gpsLat = myGPS.getLat();
   gpsLon = myGPS.getLon();
   gpsSpeed = myGPS.getSpeed();
+
+  lcd.setCursor(0,0);
+  lcd.print("T:");
+  lcd.setCursor(2,0);
+  lcd.print(tempD);
+  lcd.setCursor(8,0);
+  lcd.print("Acc:");
+  lcd.setCursor(12,0);
+  lcd.print(accelD);
+
+  lcd.setCursor(0,1);
+  lcd.print("GPS");
+  lcd.setCursor(3,1);
+  lcd.print(gpsLat);
+
+  lcd.setCursor(9,1);
+  lcd.print(gpsLon);
+  lcd.begin(16,2);
+  lcd.backlight();
+  lcd.setCursor(0,0);
 
   Serial.print("Accel: "); Serial.println(accelD);
   Serial.print("Temp: "); Serial.println(tempD);
@@ -122,15 +146,7 @@ void sensorStateloop() {
     data[count][i] = temp[i];
   }
 
-  // tcpCleanup();
-
   if (count >= (readingTotal-1)){
-    tempD = myTemp.getTempData();
-    accelV.push_back(accelD);
-    tempV.push_back(tempD);
-    latV.push_back(gpsLat);
-    lonV.push_back(gpsLon);
-    timeV.push_back(millis()/1000);
     loopTracker = 0;
 
     Serial.println("------------------- To File -------------------");
@@ -140,14 +156,6 @@ void sensorStateloop() {
     myMemory.close();
 
     count = 0;
-
-    if (static_cast<int>(timeV.size()) > 400) {
-      accelV.erase(accelV.begin() + 1);
-      tempV.erase(tempV.begin() + 1);
-      latV.erase(latV.begin() + 1);
-      lonV.erase(lonV.begin() + 1);
-      timeV.erase(timeV.begin() + 1);
-    }
   }
 
   loopTracker++;
@@ -164,6 +172,10 @@ void wifiStateLoop() {
     Serial.print("IP address: ");
     Serial.println(WiFi.localIP());
     shown_connection = 1;
+
+    lcd.setCursor(0,0);
+    lcd.print(WiFi.localIP());
+
     buildWebPage();
   }
   easyServer.handleClient();
@@ -171,7 +183,7 @@ void wifiStateLoop() {
 }
 
 void buildWebPage() {
-    myMemory.parse(110, 20);
+    myMemory.parse(110, 1);
     myMemory.close();
     easyServer.reset();
     easyServer.addLink("https://fonts.googleapis.com/css?family=Advent+Pro", 'c');
