@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>
+    </title>
+    <meta charset=\ "utf-8\" />
+    <meta name=\ "viewport\" content=\ "width=device-width\" />
+    <link href='https://fonts.googleapis.com/css?family=Advent+Pro' rel=\ "stylesheet\" type=\ "text/css\">
+    <style>
+        html {
+            height: 100%;
+        }
+
+        body {
+            height: 100%;
+        }
+
+        h2 {
+            font-size: 90px;
+            font-weight: 400;
+            margin: 0
+        }
+
+        svg {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+        }
+
+        #divTL {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 50%;
+            height: 50%;
+            background: rgba(255, 0, 0, 0.3);
+        }
+
+        #divTR {
+            position: absolute;
+            top: 0;
+            right: 0;
+            width: 50%;
+            height: 50%;
+            background: rgba(0, 255, 0, 0.3);
+        }
+
+        #divBL {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 50%;
+            height: 50%;
+            background: rgba(0, 0, 255, 0.3);
+        }
+
+        #divBR {
+            position: absolute;
+            bottom: 0;
+            right: 0;
+            width: 50%;
+            height: 50%;
+        }
+
+        .mytemp {
+            color: #fff;
+            font-family: 'Advent Pro';
+            font-weight: 400;
+            left: 50%;
+            position: absolute;
+            text-align: center;
+            top: 50%;
+            transform: translateX(-50%) translateY(-50%);
+            z-index: 100;
+            background: rgba(0, 0, 0, 0.3);
+        }
+
+        .whiteBack {
+            background: linear-gradient(to bottom, rgb(255, 255, 255), rgb(205, 205, 205))
+        }
+
+        .cold {
+            background: linear-gradient(to bottom, #7abcff, #0665e0);
+        }
+
+        .mediumhot {
+            background: linear-gradient(to bottom, #81ef85, #057003);
+        }
+
+        .hot {
+            background: linear-gradient(to bottom, #fcdb88, #d32106);
+        }
+    </style>
+    <script src="https://d3js.org/d3.v4.min.js"></script>
+    <script>
+        var titanicLat = 47.168900189313
+        var titanicLong = -109.63099896919
+        var timeArray = [1509648705, 1509657705, 1509658705]
+        var dataArray = [
+            [{
+                time: 0,
+                flow: 0
+            }, {
+                time: 1,
+                flow: 1.4
+            }, {
+                time: 3,
+                flow: 15
+            }],
+            [{
+                time: 0,
+                flow: 34
+            }, {
+                time: 1,
+                flow: 144
+            }, {
+                time: 3,
+                flow: 10
+            }],
+            [{
+                time: 0,
+                flow: 6
+            }, {
+                time: 1,
+                flow: 7.4
+            }, {
+                time: 3,
+                flow: 7.5
+            }],
+            [{
+                time: 0,
+                flow: 400
+            }, {
+                time: 1,
+                flow: 14
+            }, {
+                time: 3,
+                flow: 1500
+            }]
+        ]
+        var accelData = []
+        var distanceData = []
+    </script>
+
+</head>
+
+<body class="whiteBack">
+    <div id="divTL"></div>
+    <div id="divTR"></div>
+    <div id="divBL"></div>
+    <div id="divBR"></div>
+    <div class="mytemp">
+        <h1>Temperature</h1>
+        <h2> 11&nbsp;<small>&deg;C</small></h2>
+        <h1> Direction </h1>
+        <h2> 130<small>&deg;</small></h2></div>
+</body>
+
+<script>
+    API_KEY = "AIzaSyCk-Qr3LlPgeWbOsceNpKBq6DE1pdA_AhU"
+
+    function initMap() {
+        var boatPos = {
+            lat: titanicLat,
+            lng: titanicLong
+        };
+        var map = new google.maps.Map(document.getElementById('divBR'), {
+            zoom: 9,
+            center: boatPos
+        });
+        var marker = new google.maps.Marker({
+            position: boatPos,
+            map: map
+        });
+    }
+    // Set all SVG to the correct height and width
+    width = window.innerWidth/2;
+    height = window.innerHeight/2;
+    margin = 80
+
+    svgArray = []
+    gArray = []
+    lineArray = []
+    svgID = ["svgTL", "svgTR", "svgBL", "svgBR"]
+    svgName = ["Velocity", "Accelerometer", "Depth"]
+    svgColors = ["red", "blue", "yellow", "orange"]
+
+    svgArray.push(d3.select("#divTL").append("svg"))
+    svgArray.push(d3.select("#divTR").append("svg"))
+    svgArray.push(d3.select("#divBL").append("svg"))
+
+    // These elements hold and constrain data
+    for (i = 0; i < 3; i++) {
+        gArray.push(svgArray[i].append("g").attr("transform", "translate(" + (margin / 2) + "," + (margin / 2) + ")"))
+    }
+
+
+    var x = d3.scaleTime()
+        .rangeRound([0, width - margin])
+        .domain(d3.extent(timeArray, function(d) {
+            console.log(new Date(d * 1000));
+            return new Date(d * 1000);
+        }));
+    var y = d3.scaleLinear()
+        .rangeRound([height - margin, 0])
+        .domain(d3.extent(dataArray[0], function(d) {
+            return d.flow;
+        }));
+
+    for (i = 0; i < 3; i++) {
+        lineArray.push(d3.line().x(function(d, i) {
+            return x(new Date(timeArray[i]*1000))
+        }).y(function(d) {
+            return y(d.flow)
+        }))
+    }
+
+    for (j = 0; j < 3; j++) {
+        // x.domain(d3.extent(dataArray[j], function(d, i) {
+        //     return new Date(timeArray[i]*1000);
+        // }));
+
+        gArray[j].append("g")
+            .attr("transform", "translate(0," + (height-margin) + ")")
+            .call(d3.axisBottom(x))
+            .select(".domain")
+            .remove();
+
+        gArray[j].append("g")
+            .call(d3.axisLeft(y))
+            .append("text")
+            .attr("fill", svgColors[j])
+            .attr("transform", "rotate(-90)")
+            .attr("y", 6)
+            .attr("dy", "0.71em")
+            .attr("text-anchor", "end")
+            .text(svgName[j])
+
+    }
+    gArray[0].append("path")
+        .datum(dataArray[0])
+        .attr("fill", "none")
+        .attr("stroke", svgColors[0])
+        .attr("stroke-linejoin", "round")
+        .attr("stroke-linecap", "round")
+        .attr("stroke-width", 1.5)
+        .attr("d", lineArray[0]);
+
+    gArray[1].append("path")
+        .datum(dataArray[1])
+        .attr("fill", "none")
+        .attr("stroke", svgColors[1])
+        .attr("stroke-linejoin", "round")
+        .attr("stroke-linecap", "round")
+        .attr("stroke-width", 1.5)
+        .attr("d", lineArray[1]);
+
+    gArray[2].append("path")
+        .datum(dataArray[2])
+        .attr("fill", "none")
+        .attr("stroke", svgColors[2])
+        .attr("stroke-linejoin", "round")
+        .attr("stroke-linecap", "round")
+        .attr("stroke-width", 1.5)
+        .attr("d", lineArray[2]);
+</script>
+
+<script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCk-Qr3LlPgeWbOsceNpKBq6DE1pdA_AhU&callback=initMap">
+</script>
+
+</html>

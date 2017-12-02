@@ -9,5 +9,5 @@
 
 String parseVector(std::vector<float> v);
 String parseVectorInt(std::vector<int> v);
-
+String getValue(String data, char separator, int index);
 #endif

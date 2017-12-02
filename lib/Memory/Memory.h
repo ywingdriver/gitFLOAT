@@ -10,8 +10,31 @@ class Memory
 		void append(float accel, float temp, float lat, float lon, float speed);
 		void close();
     void read();
+    void parse(int numOfEntries, int everyOther);
     void clear();
+    String getAltData();
+    String getGpsLatData();
+    String getGpsLngData();
+    String getGpsSpeedData();
+    String getTempData();
+    String getLat();
+    String getLng();
+    String getFakeTimes();
 		void init();
+  private:
+    String altData;
+    String gpsLatData;
+    String gpsLngData;
+    String gpsSpeedData;
+    String tempData;
+    String latCur;
+    String lngCur;
+    String fakeTimes;
+    int fakeTime;
+
 };
+
+// Stack Overflow https://stackoverflow.com/questions/9072320/split-string-into-string-array
+String getValue(String data, char separator, int index);
 
 #endif
