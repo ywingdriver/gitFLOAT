@@ -3,14 +3,21 @@
 #include <GPS.h>
 #include <Memory.h>
 #include <LiquidCrystal_I2C.h>
-#include <Util.h>
 #include "lwip/tcp_impl.h"
 #include <ESP8266WiFi.h>
 #include <WiFiClient.h>
 #include <ESP8266WebServer.h>
 #include <EasyServer.h>
 
-#define CHECK_FREQUENCY 10
+/////////////////////////////////////////////////////////////////
+/*
+  Main file for F.L.O.A.T.
+  Contrinbutors: Elijah Duckels, Patrick McGill, William Cook
+*/
+/////////////////////////////////////////////////////////////////
+
+// Used to determine when to write to a file, around 2 times per minute
+#define CHECK_FREQUENCY 120
 #define BUILT_WEB_ARRAYS 0
 
 int shown_connection = 0;
@@ -19,14 +26,7 @@ void buildWebPage();
 void sensorStateLoop();
 void wifiStateLoop();
 
-void tcpCleanup()
-{
-  while(tcp_tw_pcbs!=NULL)
-  {
-    tcp_abort(tcp_tw_pcbs);
-  }
-}
-
+// Initialize created libraries for each sensor, memory, and server
 Accel myAccel;
 GPS myGPS;
 Temp myTemp;
@@ -39,13 +39,14 @@ float gpsLon;
 float gpsSpeed;
 float accelD;
 float tempD = 0;
-int loopTracker = 0;
 const int readingSize = 5;
 const int readingTotal = 20;
 int count = 0;
+// 2D array for holding sensor readings prior to writing to a file
 float data[readingTotal][readingSize];
 String fileString;
 
+// Specific requirements for connecting to the internet
 const char* ssid = "William iPhone";
 const char* password = "thorincook";
 
@@ -64,6 +65,7 @@ void setup() {
   myMemory.init();
   myAccel.init();
 
+  // Clear data file at the beginning of each float
   myMemory.clear();
 
   lcd.backlight();
@@ -77,6 +79,9 @@ void setup() {
 }
 
 void loop() {
+  // Swtich between loop states
+  // Check for wifi and if found, unload data to web server, else keep gathering
+  //    sensor data
   if (WiFi.status() != WL_CONNECTED) {
     sensorStateLoop();
     shown_connection = 0;
@@ -93,6 +98,7 @@ void sensorStateLoop() {
   gpsLon = myGPS.getLon();
   gpsSpeed = myGPS.getSpeed();
 
+  // Display sensor readings to show accurate data and sensor loop
   lcd.setCursor(0,0);
   lcd.print("T:");
   lcd.setCursor(2,0);
@@ -122,13 +128,13 @@ void sensorStateLoop() {
 
   float temp[] = {accelD, tempD, gpsLat, gpsLon, gpsSpeed};
 
+  // Creating 2D array to later unload to file
   for(int i = 0; i < readingSize; i++){
     data[count][i] = temp[i];
   }
 
   if (count >= (readingTotal-1)){
-    loopTracker = 0;
-
+    // Unpack data for appending to file
     for(int j = 0; j < (readingTotal-1); j++){
       myMemory.append(data[j][0], data[j][1], data[j][2], data[j][3], data[j][4]);
     }
@@ -137,9 +143,9 @@ void sensorStateLoop() {
     count = 0;
   }
 
-  loopTracker++;
   count++;
   easyServer.handleClient();
+  // Smart Delay used to keep GPS continually gathering data
   myGPS.smartDelay(500);
 }
 
@@ -152,6 +158,7 @@ void wifiStateLoop() {
     Serial.println(WiFi.localIP());
     shown_connection = 1;
 
+    // Display IP to indicate wifi connection
     lcd.setCursor(0,0);
     lcd.print(WiFi.localIP());
 

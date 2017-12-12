@@ -1,8 +1,18 @@
 #include <FS.h>
 #include <Memory.h>
 
-void Memory::append(float accel, float temp, float lat, float lon, float speed){
+/////////////////////////////////////////////////////////////////
+/*
+  Library created for SPIFFS use
+  Flashing current sketch to NodeMCU 1.0 is around 3MB, so SPIFFS
+  should have access to around 1MB
+*/
+/////////////////////////////////////////////////////////////////
 
+
+void Memory::append(float accel, float temp, float lat, float lon, float speed){
+  // Combine all datapoints into one string to write to file
+  // String(lat, 6) extends lat and lon for increased precision
   String lineAppend = (String) accel + "," + (String) temp + "," + String(lat, 6) + ","
               + String(lon, 6) + "," + (String) speed;
 
