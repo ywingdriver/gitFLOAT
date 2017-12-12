@@ -3,8 +3,8 @@
 
 void Memory::append(float accel, float temp, float lat, float lon, float speed){
 
-  String lineAppend = (String) accel + "," + (String) temp + "," + (String) lat + ","
-              + (String) lon + "," + (String) speed;
+  String lineAppend = (String) accel + "," + (String) temp + "," + String(lat, 6) + ","
+              + String(lon, 6) + "," + (String) speed;
 
   File f = SPIFFS.open("/data.txt", "a");
 

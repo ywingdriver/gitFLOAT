@@ -4,14 +4,13 @@
 #include <Memory.h>
 #include <LiquidCrystal_I2C.h>
 #include <Util.h>
-#include <vector>
 #include "lwip/tcp_impl.h"
 #include <ESP8266WiFi.h>
 #include <WiFiClient.h>
 #include <ESP8266WebServer.h>
 #include <EasyServer.h>
 
-#define CHECK_FREQUENCY 120
+#define CHECK_FREQUENCY 10
 #define BUILT_WEB_ARRAYS 0
 
 int shown_connection = 0;
@@ -40,29 +39,20 @@ float gpsLon;
 float gpsSpeed;
 float accelD;
 float tempD = 0;
-std::vector< float > accelV;
-std::vector< float > latV;
-std::vector< float > lonV;
-std::vector< float > tempV;
-std::vector< int > timeV;
 int loopTracker = 0;
 const int readingSize = 5;
 const int readingTotal = 20;
 int count = 0;
 float data[readingTotal][readingSize];
-
-// Global Variables to hold arrays
 String fileString;
 
-//const char* ssid = "Go Griz";
-//const char* password = "Kenpachi";
 const char* ssid = "William iPhone";
 const char* password = "thorincook";
 
 void setup() {
   Serial.begin(9600);
 
-  WiFi.mode(WIFI_STA); // SETS TO STATION MODE!
+  WiFi.mode(WIFI_STA);
   WiFi.begin(ssid, password);
 
   delay(5000);
@@ -74,16 +64,7 @@ void setup() {
   myMemory.init();
   myAccel.init();
 
-  //tempD = myTemp.getTempData();
-
-  //****************************************
-  // Hey Will this is the thing I was metnioning in class, as long as you leave
-  // myMemory.clear() commented, the data should remain on the 8266. You will need to
-  // comment out the myMemory.close() and myMemory.read() or else it'll
-  // print out the entire file to Serial.
   myMemory.clear();
-  //****************************************
-  // delay(1000);
 
   lcd.backlight();
 
@@ -97,7 +78,6 @@ void setup() {
 
 void loop() {
   if (WiFi.status() != WL_CONNECTED) {
-    Serial.print(".");
     sensorStateLoop();
     shown_connection = 0;
   }
@@ -149,7 +129,6 @@ void sensorStateLoop() {
   if (count >= (readingTotal-1)){
     loopTracker = 0;
 
-    Serial.println("------------------- To File -------------------");
     for(int j = 0; j < (readingTotal-1); j++){
       myMemory.append(data[j][0], data[j][1], data[j][2], data[j][3], data[j][4]);
     }
