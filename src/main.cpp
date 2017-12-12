@@ -12,12 +12,13 @@
 /////////////////////////////////////////////////////////////////
 /*
   Main file for F.L.O.A.T.
-  Contrinbutors(Bad ass motherfuckers): Elijah Duckels, Patrick McGill, William Cook
+  Contrinbutors: Some bad ass motherfuckers a.k.a
+    Elijah Duckels, Patrick McGill, William Cook
 */
 /////////////////////////////////////////////////////////////////
 
 // Used to determine when to write to a file, around 2 times per minute
-#define CHECK_FREQUENCY 120
+#define CHECK_FREQUENCY 10
 #define BUILT_WEB_ARRAYS 0
 
 int shown_connection = 0;
@@ -47,14 +48,11 @@ float data[readingTotal][readingSize];
 String fileString;
 
 // Specific requirements for connecting to the internet
-const char* ssid = "William iPhone";
-const char* password = "thorincook";
+const char* ssid = "Elijah iPhone";
+const char* password = "broncos812";
 
 void setup() {
   Serial.begin(9600);
-
-  WiFi.mode(WIFI_STA);
-  WiFi.begin(ssid, password);
 
   delay(5000);
 
@@ -65,8 +63,11 @@ void setup() {
   myMemory.init();
   myAccel.init();
 
+  WiFi.mode(WIFI_STA);
+  WiFi.begin(ssid, password);
+
   // Clear data file at the beginning of each float
-  myMemory.clear();
+  //myMemory.clear();
 
   lcd.backlight();
 
@@ -83,6 +84,7 @@ void loop() {
   // Check for wifi and if found, unload data to web server, else keep gathering
   // sensor data
   if (WiFi.status() != WL_CONNECTED) {
+    Serial.println(".");
     sensorStateLoop();
     shown_connection = 0;
   }
@@ -169,7 +171,7 @@ void wifiStateLoop() {
 }
 
 void buildWebPage() {
-    myMemory.parse(110, 1);
+    myMemory.parse(75, 5);
     myMemory.close();
     easyServer.reset();
     easyServer.addLink("https://fonts.googleapis.com/css?family=Advent+Pro", 'c');

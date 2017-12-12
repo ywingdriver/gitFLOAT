@@ -34,7 +34,7 @@ float GPS::getLon(){
 }
 
 float GPS::getSpeed(){
-	speed = gps.speed.mph();
+	speed = gps.speed.kmph();
 	smartDelay(0);
 	return speed;
 }
