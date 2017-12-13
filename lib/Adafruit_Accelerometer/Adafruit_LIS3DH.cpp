@@ -86,7 +86,7 @@ bool Adafruit_LIS3DH::begin(uint8_t i2caddr) {
 
   /*
   Serial.println("Debug");
-  
+
   for (uint8_t i=0; i<0x30; i++) {
     Serial.print("$");
     Serial.print(i, HEX); Serial.print(" = 0x");
@@ -145,7 +145,7 @@ void Adafruit_LIS3DH::read(void) {
     x = I2Cinterface->read(); x |= ((uint16_t)I2Cinterface->read()) << 8;
     y = I2Cinterface->read(); y |= ((uint16_t)I2Cinterface->read()) << 8;
     z = I2Cinterface->read(); z |= ((uint16_t)I2Cinterface->read()) << 8;
-  } 
+  }
   #ifndef __AVR_ATtiny85__
   else {
     if (_sck == -1)
@@ -197,7 +197,7 @@ int16_t Adafruit_LIS3DH::readADC(uint8_t adc) {
     I2Cinterface->endTransmission();
     I2Cinterface->requestFrom(_i2caddr, 2);
     value = I2Cinterface->read();  value |= ((uint16_t)I2Cinterface->read()) << 8;
-  } 
+  }
   #ifndef __AVR_ATtiny85__
   else {
     if (_sck == -1)
@@ -320,7 +320,7 @@ bool Adafruit_LIS3DH::getEvent(sensors_event_t *event) {
   event->acceleration.x = x_g * SENSORS_GRAVITY_STANDARD;
   event->acceleration.y = y_g * SENSORS_GRAVITY_STANDARD;
   event->acceleration.z = z_g * SENSORS_GRAVITY_STANDARD;
-    
+
   return true;
 }
 
@@ -384,7 +384,7 @@ void Adafruit_LIS3DH::writeRegister8(uint8_t reg, uint8_t value) {
     I2Cinterface->write((uint8_t)reg);
     I2Cinterface->write((uint8_t)value);
     I2Cinterface->endTransmission();
-  } 
+  }
   #ifndef __AVR_ATtiny85__
   else {
     if (_sck == -1)
@@ -414,7 +414,7 @@ uint8_t Adafruit_LIS3DH::readRegister8(uint8_t reg) {
 
     I2Cinterface->requestFrom(_i2caddr, 1);
     value = I2Cinterface->read();
-  }  
+  }
   #ifndef __AVR_ATtiny85__
   else {
     if (_sck == -1)
