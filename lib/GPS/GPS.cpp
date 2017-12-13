@@ -13,6 +13,7 @@
 float lat;
 float lon;
 float speed;
+float timeGPS;
 // Secondary TX,RX pins for esp8266 13 = D7, 15 = D8
 static const int RXPin = 13, TXPin = 15;
 // Make GPS baud and Serial baud the same
@@ -37,6 +38,12 @@ float GPS::getSpeed(){
 	speed = gps.speed.kmph();
 	smartDelay(0);
 	return speed;
+}
+
+float GPS::getTime(){
+	timeGPS = gps.time.value();
+	smartDelay(0);
+	return timeGPS;
 }
 
 // Smart Delay used to keep GPS connection during outside processes

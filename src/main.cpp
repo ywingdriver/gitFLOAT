@@ -17,8 +17,6 @@
 */
 /////////////////////////////////////////////////////////////////
 
-// Used to determine when to write to a file, around 2 times per minute
-#define CHECK_FREQUENCY 10
 #define BUILT_WEB_ARRAYS 0
 
 int shown_connection = 0;
@@ -39,8 +37,9 @@ float gpsLat;
 float gpsLon;
 float gpsSpeed;
 float accelD;
+float gpsTime;
 float tempD = 0;
-const int readingSize = 5;
+const int readingSize = 6;
 const int readingTotal = 20;
 int count = 0;
 // 2D array for holding sensor readings prior to writing to a file
@@ -67,7 +66,7 @@ void setup() {
   WiFi.begin(ssid, password);
 
   // Clear data file at the beginning of each float
-  //myMemory.clear();
+  myMemory.clear();
 
   lcd.backlight();
 
@@ -99,6 +98,7 @@ void sensorStateLoop() {
   gpsLat = myGPS.getLat();
   gpsLon = myGPS.getLon();
   gpsSpeed = myGPS.getSpeed();
+  gpsTime = myGPS.getTime();
 
   // Display sensor readings to show accurate data and sensor loop
   lcd.setCursor(0,0);
@@ -126,6 +126,7 @@ void sensorStateLoop() {
   Serial.print("Lat: "); Serial.println(gpsLat);
   Serial.print("Lon: "); Serial.println(gpsLon);
   Serial.print("Speed: "); Serial.println(gpsSpeed);
+  Serial.print("Time: "); Serial.println((gpsTime/100));
   Serial.println();
 
   float temp[] = {accelD, tempD, gpsLat, gpsLon, gpsSpeed};
@@ -138,7 +139,7 @@ void sensorStateLoop() {
   if (count >= (readingTotal-1)){
     // Unpack data for appending to file
     for(int j = 0; j < (readingTotal-1); j++){
-      myMemory.append(data[j][0], data[j][1], data[j][2], data[j][3], data[j][4]);
+      myMemory.append(data[j][0], data[j][1], data[j][2], data[j][3], data[j][4], data[j][5]);
     }
     myMemory.close();
 
