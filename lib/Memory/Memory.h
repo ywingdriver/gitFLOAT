@@ -20,6 +20,7 @@ class Memory
     String getLat();
     String getLng();
     String getFakeTimes();
+    int getNumEntries();
 		void init();
   private:
     String altData;
