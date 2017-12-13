@@ -10,7 +10,7 @@ class Memory
 		void append(float accel, float temp, float lat, float lon, float speed);
 		void close();
     void read();
-    void parse(int numOfEntries, int everyOther);
+    void parse(int numOfEntries);
     void clear();
     String getAltData();
     String getGpsLatData();

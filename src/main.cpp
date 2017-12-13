@@ -162,7 +162,7 @@ void wifiStateLoop() {
 }
 
 void buildWebPage() {
-    myMemory.parse(110, 1);
+    myMemory.parse(110);
     myMemory.close();
     easyServer.reset();
     easyServer.addLink("https://fonts.googleapis.com/css?family=Advent+Pro", 'c');

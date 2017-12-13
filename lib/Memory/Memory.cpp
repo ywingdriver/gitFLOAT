@@ -47,9 +47,15 @@ void Memory::read(){
 
 
 // Takes info and puts them in class strings
-void Memory::parse(int numOfEntries, int everyOther) {
+void Memory::parse(int numOfEntries) {
 
   File f = SPIFFS.open("/data.txt", "r");
+
+  int numEntries = getNumEntries();
+  int everyOther = 1;
+
+  if (numEntries < 200)
+  everyOther += numEntries/100 - 1;
 
   String s = "";
   altData = "[";
