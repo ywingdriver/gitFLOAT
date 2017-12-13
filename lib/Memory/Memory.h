@@ -7,7 +7,7 @@
 class Memory
 {
   public:
-		void append(float accel, float temp, float lat, float lon, float speed);
+		void append(float accel, float temp, float lat, float lon, float speed, float gpsTime);
 		void close();
     void read();
     void parse(int numOfEntries);

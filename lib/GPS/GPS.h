@@ -11,6 +11,7 @@ class GPS
 		float getLat();
 		float getLon();
 		float getSpeed();
+    float getTime();
 		void smartDelay(unsigned long ms);
 		void init();
 };

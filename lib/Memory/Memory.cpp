@@ -10,11 +10,13 @@
 /////////////////////////////////////////////////////////////////
 
 
-void Memory::append(float accel, float temp, float lat, float lon, float speed){
+void Memory::append(float accel, float temp, float lat, float lon, float speed, float gpsTime){
   // Combine all datapoints into one string to write to file
   // String(lat, 6) extends lat and lon for increased precision
+  gpsTime = gpsTime/100;
+  
   String lineAppend = (String) accel + "," + (String) temp + "," + String(lat, 6) + ","
-              + String(lon, 6) + "," + (String) speed;
+              + String(lon, 6) + "," + (String) speed + "," + (String) gpsTime;
 
   File f = SPIFFS.open("/data.txt", "a");
 
