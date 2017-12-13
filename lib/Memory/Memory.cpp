@@ -54,8 +54,6 @@ void Memory::read(){
   f.close();
 }
 
-
-
 // Takes info and puts them in class strings
 void Memory::parse(int numOfEntries) {
 
@@ -179,6 +177,25 @@ void Memory::init(){
   //clear();
 }
 
+int Memory::getNumEntries() {
+  File f = SPIFFS.open("/data.txt", "r");
+
+  int numEntries = 0;
+
+  if (!f) {
+    Serial.println("File open for READING failure");
+  } else {
+    while(f.position() < f.size()){
+      f.readStringUntil('\n');
+      ++numEntries;
+      Serial.println("THISss");
+    }
+  }
+  f.close();
+  Serial.println("Finished counting lines!");
+  return numEntries;
+}
+
 // Stack Overflow https://stackoverflow.com/questions/9072320/split-string-into-string-array
 String getValue(String data, char separator, int index){
  int found = 0;
@@ -194,21 +211,4 @@ String getValue(String data, char separator, int index){
  }
 
  return found>index ? data.substring(strIndex[0], strIndex[1]) : "";
-}
-
-int Memory::getNumEntries() {
-  File f = SPIFFS.open("/data.txt", "r");
-
-  int numEntries = 0;
-
-  if (!f) {
-    Serial.println("File open for READING failure");
-  } else {
-    while(f.position() < f.size()){
-      f.readStringUntil('\n');
-      ++numEntries;
-    }
-  }
-  f.close();
-  return numEntries;
 }
