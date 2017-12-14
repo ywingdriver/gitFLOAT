@@ -7,7 +7,6 @@
 class Accel
 {
   public:
-    int test;
     float getAccelData();
     void init();
 };

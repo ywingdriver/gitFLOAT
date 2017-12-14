@@ -37,7 +37,7 @@ void Accel::init(){
     Serial.println("Couldnt start Accelerometer");
     while (1);
   } else {
-    // Set at 8 sensitivity for optimal sensitivity (not too sensitive) when floating
+    // Set at 8 sensitivity for optimal sensitivity (not too sensitive)
     lis.setRange(LIS3DH_RANGE_8_G);
     range = lis.getRange();
     Serial.println("Accelerometer init successful with " + String(2 << range) +"G sensitivity.");

@@ -12,15 +12,18 @@
 /////////////////////////////////////////////////////////////////
 /*
   Main file for F.L.O.A.T.
-  Contrinbutors: Some bad ass motherfuckers a.k.a
-    Elijah Duckels, Patrick McGill, William Cook
+  Contrinbutors (some bad ass motherfuckers):
+    Elijah Duckels, William Cook, Patrick McGill
+  Outline: Setup contains code that initializes sensors, WIFI, memory, and server.
+    The main loop for main sets the state for the program to either sending data
+    via WIFI or collecting data from sensors. If a WIFI connection is available,
+    then the server code is used, sending data to the web interface. If there
+    is no WIFI connection, the program continually collects sensor data and
+    writes it to the esp8266 using SPIFFS.
 */
 /////////////////////////////////////////////////////////////////
 
-#define BUILT_WEB_ARRAYS 0
-
-int shown_connection = 0;
-
+// Forward declarations for functions
 void buildWebPage();
 void sensorStateLoop();
 void wifiStateLoop();
@@ -39,14 +42,17 @@ float gpsSpeed;
 float accelD;
 float gpsTime;
 float tempD = 0;
+// Getting 6 values from sensorsS
 const int readingSize = 6;
+// Data is being read in chunks of 20 and unloading every minute to SPIFFS
 const int readingTotal = 21;
 int count = 0;
+int shown_connection = 0;
 // 2D array for holding sensor readings prior to writing to a file
 float data[readingTotal][readingSize];
 String fileString;
 
-// Specific requirements for connecting to the internet
+// Specific requirements for connecting to cell phone hotspot
 const char* ssid = "Elijah iPhone";
 const char* password = "broncos812";
 
@@ -79,8 +85,7 @@ void setup() {
 
 void loop() {
   // Swtich between loop states
-  // Check for wifi and if found, unload data to web server, else keep gathering
-  // sensor data
+  // Check for wifi and if found, unload data to web server, else keep gathering sensor data
   if (WiFi.status() != WL_CONNECTED) {
     Serial.println(".");
     sensorStateLoop();
@@ -91,7 +96,6 @@ void loop() {
   }
 }
 
-// --Sensor State Loop--
 void sensorStateLoop() {
   accelD = myAccel.getAccelData();
   tempD = myTemp.getTempData();
@@ -100,7 +104,7 @@ void sensorStateLoop() {
   gpsSpeed = myGPS.getSpeed();
   gpsTime = myGPS.getTime();
 
-  // Display sensor readings to show accurate data and sensor loop
+  // Display sensor readings to LCD to show accurate data and sensor loop
   lcd.setCursor(0,0);
   lcd.print("T:");
   lcd.setCursor(2,0);
@@ -130,10 +134,9 @@ void sensorStateLoop() {
   Serial.print("Time: "); Serial.println((gpsTime/100));
   Serial.println();
 
-  // Store all data in the temporary temp[] array
   float temp[] = {accelD, tempD, gpsLat, gpsLon, gpsSpeed, gpsTime};
 
-  // Creating 2D array to later unload to file
+  // Creating 2D array from above temp array to later unload to file
   for(int i = 0; i < readingSize; i++){
     data[count][i] = temp[i];
   }
@@ -144,7 +147,6 @@ void sensorStateLoop() {
       myMemory.append(data[j][0], data[j][1], data[j][2], data[j][3], data[j][4], data[j][5]);
     }
     myMemory.close();
-
     count = 0;
   }
 
@@ -154,7 +156,6 @@ void sensorStateLoop() {
   myGPS.smartDelay(500);
 }
 
-// --Wifi State Loop--
 void wifiStateLoop() {
   if (shown_connection == 0) {
     Serial.println();
@@ -172,11 +173,8 @@ void wifiStateLoop() {
     Serial.println("Finished building webpage.");
   }
   easyServer.handleClient();
-  //Serial.println("Client handled");
 }
 
-// buildWebPage()
-// -------------
 // Compliles variables via easyServer Library
 // Adds custon CSS, links, body
 void buildWebPage() {

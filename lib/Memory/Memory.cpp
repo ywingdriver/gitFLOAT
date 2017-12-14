@@ -13,6 +13,8 @@
 void Memory::append(float accel, float temp, float lat, float lon, float speed, float gpsTime){
   // Combine all datapoints into one string to write to file
   // String(lat, 6) extends lat and lon for increased precision
+
+  // remove some unnecessary precision from gpsTime
   gpsTime = gpsTime/100;
 
   String lineAppend = (String) accel + "," + (String) temp + "," + String(lat, 6) + ","
@@ -32,6 +34,7 @@ void Memory::append(float accel, float temp, float lat, float lon, float speed, 
   }
 }
 
+// Used to allow user to view file size and close file at the same time
 void Memory::close(){
   File f = SPIFFS.open("/data.txt", "a");
 
@@ -43,6 +46,7 @@ void Memory::close(){
   }
 }
 
+// Mostly used for testing
 void Memory::read(){
   File f = SPIFFS.open("/data.txt", "r");
 
@@ -79,7 +83,6 @@ void Memory::parse(int numOfEntries) {
   gpsSpeedData = "[";
   tempData = "[";
   fakeTimes = "[";
-  //fakeTime = millis()/1000;
 
   if (!f) {
     Serial.println("File open for READING failure");
@@ -183,7 +186,6 @@ void Memory::init(){
   SPIFFS.begin();
 
   Serial.println("SPIFFS init successful.");
-  //clear();
 }
 
 int Memory::getNumEntries() {

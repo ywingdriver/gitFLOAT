@@ -12,6 +12,13 @@
 #include <sstream>
 #include "EasyServer.h"
 
+
+/////////////////////////////////////////////////////////////////
+/*
+  Library created for ease of use for server. Hence, EasyServer
+*/
+/////////////////////////////////////////////////////////////////
+
 // Constructor
 EasyServer::EasyServer(int server_port){
     server = new ESP8266WebServer(server_port);
