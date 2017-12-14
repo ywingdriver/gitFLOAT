@@ -15,6 +15,7 @@
 // Constructor
 EasyServer::EasyServer(int server_port){
     server = new ESP8266WebServer(server_port);
+    html = "";
     linksCSS = "";
     css = "";
     linksScript = "";
@@ -32,11 +33,14 @@ EasyServer::~EasyServer() {
    delete[] server;
 }
 
-
-// float addLink()
+// void addLink()
 // ---------------------------------------------
 // adds a script or stylesheet refrence to the file.
-// Takes url="www.yourURL.com/script.js" and type='s' for script, 'c' for stylesheet, 'a' for async.
+// Takes url="www.yourURL.com/script.js"
+// type='s' for script
+// 'c' for stylesheet
+// 'a' for async ater body,
+// 'b' for normal after body.
 void EasyServer::addLink(String url, char type) {
 
     if (type == 'c') { //Stylesheet
@@ -47,13 +51,17 @@ void EasyServer::addLink(String url, char type) {
       linksScriptAsync += "<script async defer src='" + url;
       linksScriptAsync += "'></script>";
     }
+    else if (type == 'b') { //After body
+      linksScriptAsync += "<script src='" + url;
+      linksScriptAsync += "'></script>";
+    }
     else { //Script
       linksScript += "<script src='" + url;
       linksScript += "'></script>";
     }
   }
 
-// float addCSS()
+// void addCSS()
 // ---------------------------------------------
 // adds custom CSS to the header of the HTML document.
 // Takes string (formatted as CSS stylesheet)
@@ -64,7 +72,7 @@ void EasyServer::addCSS(String cssString) {
     css += cssString;
 }
 
-// float addVariable()
+// void addVariable()
 // ---------------------------------------------
 // adds a custom variable to the header of your file.
 // Convienent way to add custom varaibles that will be modified in the later <script> section.
@@ -77,7 +85,11 @@ void EasyServer::addVariable(String name, String value) {
   variables += ";";
 }
 
+// void reset()
+// ---------------------------------------------
+// resets all String varaibles used to build the web page
 void EasyServer::reset() {
+  html = "";
   linksCSS = "";
   css = "";
   linksScript = "";
@@ -88,7 +100,7 @@ void EasyServer::reset() {
   linksScriptAsync = "";
 }
 
-// float addBody()
+// void addBody()
 // ---------------------------------------------
 // Adds the HTML based body of the file inbetween the <body> tags.
 // Takes a string of HTML, for example:
@@ -98,9 +110,9 @@ void EasyServer::addBody(String htmlString) {
   body += htmlString;
 }
 
-// float addHeadScript(), addBodyScript
+// float addHeadScript()
 // ---------------------------------------------
-// Adds a section of script in the head or after the body of the document
+// Adds a section of script in the head of the document
 // Takes a string of Javascript script, for example:
 // " var file = file.open("webfile.txt")
 //   document.findElement('h2').append('My Text')"
@@ -108,6 +120,12 @@ void EasyServer::addHeadScript(String scriptString) {
   scriptHead += scriptString;
 }
 
+// float addBodyScript()
+// ---------------------------------------------
+// Adds a section of script after the body of the document
+// Takes a string of Javascript script, for example:
+// " var file = file.open("webfile.txt")
+//   document.findElement('h2').append('My Text')"
 void EasyServer::addBodyScript(String scriptString) {
   scriptBody += scriptString;
 }
@@ -128,7 +146,7 @@ void EasyServer::handleClient() {
 // PRIVATE buildWebpage()
 // Takes all of the different compoents of the webpage and builds a thing
 void EasyServer::buildWebPage() {
-    String html = "<!DOCTYPE html><html><head><title></title><meta charset= 'utf-8' /><meta name= 'viewport' content= 'width=device-width' />";
+    html = "<!DOCTYPE html><html><head><title></title><meta charset= 'utf-8' /><meta name= 'viewport' content= 'width=device-width' />";
     html += linksCSS;
     html += "<style>";
     html += css;
@@ -146,4 +164,5 @@ void EasyServer::buildWebPage() {
     html += "</html>";
 
     server->send(200, "text/html", html);
+    html = "";
 }

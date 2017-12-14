@@ -14,16 +14,21 @@ void Memory::append(float accel, float temp, float lat, float lon, float speed, 
   // Combine all datapoints into one string to write to file
   // String(lat, 6) extends lat and lon for increased precision
   gpsTime = gpsTime/100;
-  
+
   String lineAppend = (String) accel + "," + (String) temp + "," + String(lat, 6) + ","
-              + String(lon, 6) + "," + (String) speed + "," + (String) gpsTime;
+              + String(lon, 6) + "," + (String) speed + "," + (String) ((int) gpsTime);
 
   File f = SPIFFS.open("/data.txt", "a");
 
   if (!f) {
     Serial.println("File open for APPENDING failure");
   } else {
-    f.println(lineAppend);
+    if (lat == 0.0) {
+      Serial.println("GPS IS DEAD");
+    }
+    else {
+      f.println(lineAppend);
+    }
   }
 }
 
@@ -74,7 +79,7 @@ void Memory::parse(int numOfEntries) {
   gpsSpeedData = "[";
   tempData = "[";
   fakeTimes = "[";
-  fakeTime = millis()/1000;
+  //fakeTime = millis()/1000;
 
   if (!f) {
     Serial.println("File open for READING failure");
@@ -99,7 +104,6 @@ void Memory::parse(int numOfEntries) {
 
         s = f.readStringUntil('\n');
         s.trim();
-
       if (j == 0) {
         altData += getValue(s, ',', 0);
         tempData += getValue(s, ',', 1);
@@ -108,7 +112,8 @@ void Memory::parse(int numOfEntries) {
         gpsLngData += getValue(s, ',', 3);
         lngCur = getValue(s, ',', 3);
         gpsSpeedData += getValue(s, ',', 4);
-        fakeTimes += (fakeTime + i);
+        //fakeTimes += (fakeTime + i);
+        fakeTimes += getValue(s, ',', 5);
 
         i++;
       }
@@ -126,6 +131,8 @@ void Memory::parse(int numOfEntries) {
   tempData += "]";
   fakeTimes += "]";
   f.close();
+
+  Serial.println("Finished parsing file!");
 
 }
 
@@ -190,7 +197,6 @@ int Memory::getNumEntries() {
     while(f.position() < f.size()){
       f.readStringUntil('\n');
       ++numEntries;
-      Serial.println("THISss");
     }
   }
   f.close();

@@ -34,6 +34,7 @@ class EasyServer
     void reset();
     ESP8266WebServer *server;
   private:
+    String html;
     String linksCSS;
     String linksScript;
     String css;
